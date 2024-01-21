@@ -12,14 +12,20 @@ correlation = correlation.iloc[25].sort_values(key=abs)
 correlation = correlation.loc['proppant_intensity':'OilPeakRate']
 print(correlation)
 print()
-for i in correlation.index:
-    print(i + ": " + str(len(raw_data.dropna(subset=[i]))))
 
-full_data = raw_data.dropna(subset=['proppant_intensity','total_proppant','frac_fluid_intensity','true_vertical_depth','bin_lateral_length','gross_perforated_length','total_fluid'])
+feature_avaliability = {}
+for i in correlation.index:
+    feature_avaliability[i] = len(raw_data.dropna(subset=[i]))
+
+print(pd.Series(data=feature_avaliability).sort_values())
+
+full_data = raw_data.dropna(subset=['proppant_intensity','total_proppant','frac_fluid_intensity','true_vertical_depth','bin_lateral_length','gross_perforated_length','total_fluid','OilPeakRate'])
 print("Final, full dataset size: " + str(len(full_data)))
-'''
+
+correlation = raw_data.corr()
+
 plt.figure()
 sns.heatmap(correlation)
 
 plt.show()
-'''
+

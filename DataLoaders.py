@@ -9,8 +9,8 @@ from torch.utils.data import random_split
 from ChevronModel import ChevronModel
 import torch.nn.functional as F
 
-BATCH_SIZE = 200
-NUM_EPOCHS = 2500
+BATCH_SIZE = 150
+NUM_EPOCHS = 20
 
 transform = transforms.ToTensor()
 
@@ -34,7 +34,7 @@ full_data = full_data.drop(axis=1,columns=bad_columns)
 # full_data = full_data.truncate(after=100)
 
 # print(len(full_data))
-train_size = int(0.8 * len(full_data))
+train_size = int(0.7 * len(full_data))
 test_size = len(full_data) - train_size
 
 full_set = ChevronDataset(full_data=full_data)
@@ -42,7 +42,7 @@ full_set = ChevronDataset(full_data=full_data)
 train_set, test_set = random_split(full_set, [train_size, test_size])
 
 train_loader = DataLoader(train_set,batch_size=BATCH_SIZE,shuffle=True)
-test_loader = DataLoader(test_set,batch_size=BATCH_SIZE,shuffle=True)
+test_loader = DataLoader(test_set,batch_size=10,shuffle=True)
 
 
 model = ChevronModel()
@@ -56,21 +56,21 @@ for epoch in range(NUM_EPOCHS):
         optimizer.zero_grad()
         outputs = model(inputs)
 
-        #loss = criterion(F.normalize(outputs.flatten(), dim=0), F.normalize(labels, dim=0))
-        loss = criterion(outputs.flatten(), labels)
+        loss = torch.sqrt(criterion(outputs.flatten(), labels))
 
         loss.backward()
         optimizer.step()
-        if index==10:
-            break
-    if epoch % 100 == 0:    
-        print('Epoch: {} Average Loss: {:.4f}'.format(epoch, loss / BATCH_SIZE))
+        if index==BATCH_SIZE:
+            break   
+    print('Epoch: {} Loss: {:.4f}'.format(epoch, loss / BATCH_SIZE))
 
 with torch.no_grad():
-    for index, (inputs, labels) in enumerate(test_loader):
+    for i in range(10):
+        for index, (inputs, labels) in enumerate(test_loader):
 
-        outputs = model(inputs)
+            outputs = model(inputs)
 
-        loss = criterion(outputs.flatten(), labels)
-        print(loss / BATCH_SIZE)
-        break
+            loss = torch.sqrt(criterion(outputs.flatten(), labels))
+        print(loss / 10)
+
+torch.save(model.state_dict(), "/Users/ericching/Documents/GitHub/Rice-Datathon-2024-Submission/ChevronModel.pth")
